@@ -1,11 +1,14 @@
+from logic_utils import get_range_for_difficulty, parse_guess, check_guess, update_score
 import random
 import streamlit as st
+
 
 def get_range_for_difficulty(difficulty: str):
     if difficulty == "Easy":
         return 1, 20
     if difficulty == "Normal":
         return 1, 100
+    # FIXME looking in the logic, it seems that the hard difficulty is actually easier than the normal one, because it has a smaller range. So we need to adjust the range for hard difficulty to make it more challenging.
     if difficulty == "Hard":
         return 1, 50
     return 1, 100
@@ -34,17 +37,19 @@ def check_guess(guess, secret):
         return "Win", "🎉 Correct!"
 
     try:
+        # FIXME The logic is backwards, it seems that the  go higher and go lower messages are swapped. So we need to adjust it.
+        # FIX: Swapped hint messages using Copilot inline chat, this is verified by playinggame
         if guess > secret:
-            return "Too High", "📈 Go HIGHER!"
+            return "Too High", "📉 Go LOWER!"
         else:
-            return "Too Low", "📉 Go LOWER!"
+            return "Too Low", "📈 Go HIGHER!"
     except TypeError:
         g = str(guess)
         if g == secret:
             return "Win", "🎉 Correct!"
         if g > secret:
-            return "Too High", "📈 Go HIGHER!"
-        return "Too Low", "📉 Go LOWER!"
+            return "Too High", "📉 Go LOWER!"
+        return "Too Low", "📈 Go HIGHER!"
 
 
 def update_score(current_score: int, outcome: str, attempt_number: int):
@@ -55,6 +60,7 @@ def update_score(current_score: int, outcome: str, attempt_number: int):
         return current_score + points
 
     if outcome == "Too High":
+        # FIXME the scoring logic is inconsistent, it seems that the player gets points for being too high on even attempts and loses points on odd attempts, which is counterintuitive. So we need to adjust the scoring logic to be consistent and make more sense.
         if attempt_number % 2 == 0:
             return current_score + 5
         return current_score - 5
@@ -63,6 +69,7 @@ def update_score(current_score: int, outcome: str, attempt_number: int):
         return current_score - 5
 
     return current_score
+
 
 st.set_page_config(page_title="Glitchy Guesser", page_icon="🎮")
 
@@ -89,7 +96,7 @@ low, high = get_range_for_difficulty(difficulty)
 st.sidebar.caption(f"Range: {low} to {high}")
 st.sidebar.caption(f"Attempts allowed: {attempt_limit}")
 
-if "secret" not in st.session_state:
+if "secret" not in st.session_state:  # no more rerun issues!
     st.session_state.secret = random.randint(low, high)
 
 if "attempts" not in st.session_state:
@@ -105,11 +112,13 @@ if "history" not in st.session_state:
     st.session_state.history = []
 
 st.subheader("Make a guess")
-
+# FIXME: Always displays range as 1-100 regardless of difficulty setting, may logically mislead the player
+# FIX: Updated to use actual low and high variables, verified by switching difficulties
 st.info(
-    f"Guess a number between 1 and 100. "
-    f"Attempts left: {attempt_limit - st.session_state.attempts}"
+    f"Guess a number between {low} and {high}. "
+    f"Attempts left: {max(0, attempt_limit - st.session_state.attempts)}"
 )
+
 
 with st.expander("Developer Debug Info"):
     st.write("Secret:", st.session_state.secret)
@@ -132,6 +141,7 @@ with col3:
     show_hint = st.checkbox("Show hint", value=True)
 
 if new_game:
+    # FIXME The game initializes at 1, but it seems that the code here initializes the attempts at 0, which creates an inconsistency in the logic. So we need to adjust the initialization of attempts to start at 1 to be consistent with the rest of the code.
     st.session_state.attempts = 0
     st.session_state.secret = random.randint(1, 100)
     st.success("New game started.")
@@ -154,7 +164,7 @@ if submit:
         st.error(err)
     else:
         st.session_state.history.append(guess_int)
-
+# FIXME secret converted to string on even attempts, breaks the comparison
         if st.session_state.attempts % 2 == 0:
             secret = str(st.session_state.secret)
         else:

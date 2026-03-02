@@ -26,12 +26,16 @@ It wrote the code, ran away, and now the game is unplayable.
 ## 📝 Document Your Experience
 
 - [ ] Describe the game's purpose.
+This game's purpose is that it's intentionally wonky and out of place with "secret" number creation, and guiding higher or lower guessing hints to encourage us AI engineers to probe properly. 
 - [ ] Detail which bugs you found.
+I've found that the hints were backwards, the hard mode range was less than the normal one (1-50 vs 1-100) the secret number converted to a string on even attempts breaking comparisons, attempts reset to 0 on the new game but initialized at 1,  the range display always showed 1-100 regardless of the difficulty, and how the scoring was inconsistent. Some of these might be more meticulous than others.
 - [ ] Explain what fixes you applied.
+Updated to use actual low and high variables, verified by switching difficulties, and I swapped the hints to properly guide users.
 
 ## 📸 Demo
 
 - [ ] [Insert a screenshot of your fixed, winning game here]
+
 
 ## 🚀 Stretch Features
 
